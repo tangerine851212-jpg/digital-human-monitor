@@ -1,0 +1,78 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum AnalyticsPlatform {
+  WEB
+  ANDROID
+}
+
+model AnalyticsSession {
+  id             String            @id @default(cuid())
+  sessionKey     String            @unique
+  platform       AnalyticsPlatform
+  domain         String?
+  channel        String?
+  visitorId      String?
+  userId         String?
+  locale         String?
+  timezone       String?
+  referrer       String?
+  userAgent      String?
+  ipAddress      String?
+  appVersion     String?
+  browser        String?
+  browserVersion String?
+  deviceType     String?
+  deviceBrand    String?
+  deviceModel    String?
+  osName         String?
+  osVersion      String?
+  screenWidth    Int?
+  screenHeight   Int?
+  eventCount     Int               @default(0)
+  startedAt      DateTime          @default(now())
+  lastSeenAt     DateTime          @default(now())
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+  events         AnalyticsEvent[]
+
+  @@index([platform, lastSeenAt(sort: Desc)])
+  @@index([visitorId, lastSeenAt(sort: Desc)])
+}
+
+model AnalyticsEvent {
+  id          String            @id @default(cuid())
+  sessionId   String
+  sessionKey  String
+  platform    AnalyticsPlatform
+  name        String
+  type        String
+  pageUrl     String?
+  pathname    String?
+  title       String?
+  referrer    String?
+  elementTag  String?
+  elementText String?
+  elementId   String?
+  elementRole String?
+  component   String?
+  value       String?
+  durationMs  Int?
+  sequence    Int?
+  metadata    Json?
+  occurredAt  DateTime          @default(now())
+  createdAt   DateTime          @default(now())
+  session     AnalyticsSession  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@index([occurredAt(sort: Desc)])
+  @@index([platform, occurredAt(sort: Desc)])
+  @@index([name, occurredAt(sort: Desc)])
+  @@index([type, occurredAt(sort: Desc)])
+  @@index([pathname, occurredAt(sort: Desc)])
+  @@index([sessionKey, occurredAt(sort: Desc)])
+}
